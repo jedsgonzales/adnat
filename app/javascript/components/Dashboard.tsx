@@ -263,7 +263,6 @@ class Dashboard extends React.Component <IDashboardProps, IDashboardState> {
     if(cellInfo.original.editing){
       return <Input type="time"
         onChange={(e) => {
-          console.log(cellInfo.column.id, e.target.value);
           const { workSpace } = this.state;
 
           this.setState({
@@ -481,8 +480,6 @@ class Dashboard extends React.Component <IDashboardProps, IDashboardState> {
 
     let data = [];
 
-    console.log("this.state.date_range.from ", this.state.date_range.from);
-    console.log("this.state.date_range.to ", this.state.date_range.to);
     this.state.order.forEach( (id:number) => {
       const d:ShiftWorkSpaceData = workSpace[id];
       
@@ -553,7 +550,6 @@ class Dashboard extends React.Component <IDashboardProps, IDashboardState> {
                   }}>
                     <FormGroup>
                       <Input type="select" id="userSelect" value={this.state.user !== null ? this.state.user.id : '0'} onChange={(e) => {
-                        console.log("selected user ", e.target.value);
 
                         if(e.target.value === "0"){
                           this.setState({user: null});
