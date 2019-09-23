@@ -11,16 +11,8 @@ import moment from "moment";
 import { WithContext as ReactTags } from 'react-tag-input';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faTrash, faEdit, faBan } from '@fortawesome/free-solid-svg-icons';
-
-
-const KeyCodes = {
-  COMMA: 188,
-  ENTER: 13,
-  TAB: 9,
-  SPACE: 32,
-};
- 
-const delimiters = [KeyCodes.COMMA, KeyCodes.ENTER, KeyCodes.SPACE, KeyCodes.TAB];
+import { stat } from "fs";
+import { number } from "prop-types";
 
 interface ShiftWorkSpaceData {
   shift:Shift;
@@ -46,8 +38,20 @@ interface IDashboardState {
     [id:number]: User;
   }
   user: User | null;
+  date_range: { from:string, to:string }
+  order: Array<number>;
   loading: boolean;
 }
+
+const KeyCodes = {
+  COMMA: 188,
+  ENTER: 13,
+  TAB: 9,
+  SPACE: 32,
+};
+ 
+const delimiters = [KeyCodes.COMMA, KeyCodes.ENTER, KeyCodes.SPACE, KeyCodes.TAB];
+const now = moment(moment.now());
 
 class Dashboard extends React.Component <IDashboardProps, IDashboardState> {
 
@@ -58,6 +62,11 @@ class Dashboard extends React.Component <IDashboardProps, IDashboardState> {
       workSpace: [],
       users: {},
       user: null,
+      date_range: {
+        from: moment(moment.now()).subtract(30, "days").format("YYYY-MM-DD"),
+        to: moment(moment.now()).format("YYYY-MM-DD")
+      },
+      order: [],
       loading: false
     }
   }
@@ -85,8 +94,8 @@ class Dashboard extends React.Component <IDashboardProps, IDashboardState> {
           }
       }).then( (resp: AxiosResponse) => {
         let workSpace:ShiftWorkSpace = {};
+        let order:Array<number> = [0];
 
-        const now = moment(moment.now());
         const emptyShift:Shift = {
           id: 0,
           shift_date: now.format("YYYY-MM-DD"),
@@ -112,13 +121,15 @@ class Dashboard extends React.Component <IDashboardProps, IDashboardState> {
             users[shiftInfo.user.id] = shiftInfo.user;
           }
 
+          order.push(shiftInfo.id);
+
           workSpace[shiftInfo.id] = { shift: { ...shiftInfo }, 
             original: { ...shiftInfo }, editing: false, 
             breaks: shiftInfo.breaks.map(b => ({ id: b.toString(), text: b.toString() })) 
           }
         });
 
-        this.setState({workSpace: workSpace, users: users, loading: false});
+        this.setState({workSpace: workSpace, users: users, order: order, loading: false});
 
       }).catch( (error:AxiosError) => {
         setTimeout( () => this.loadOrganizationShifts(organization), 2000 );
@@ -468,10 +479,20 @@ class Dashboard extends React.Component <IDashboardProps, IDashboardState> {
 
     const { workSpace } = this.state;
 
-    let data = Object.values(workSpace);
+    let data = [];
+
+    console.log("this.state.date_range.from ", this.state.date_range.from);
+    console.log("this.state.date_range.to ", this.state.date_range.to);
+    this.state.order.forEach( (id:number) => {
+      const d:ShiftWorkSpaceData = workSpace[id];
+      
+      if(d.shift.shift_date >= this.state.date_range.from && d.shift.shift_date <= this.state.date_range.to){
+        data.push(d);
+      }
+    });
 
     if(this.state.user !== null){
-      data = data.filter((d:ShiftWorkSpaceData) => d.shift.id == 0 || d.shift.user.id === this.state.user.id );
+      data = data.filter((d:ShiftWorkSpaceData) => (d.shift.id == 0 || d.shift.user.id === this.state.user.id) );
     }
     
     return (
@@ -546,6 +567,16 @@ class Dashboard extends React.Component <IDashboardProps, IDashboardState> {
                           <option key={"user-" + user.id } value={user.id}>{user.name}</option>
                         )}
                       </Input>
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>&nbsp;&nbsp;&nbsp;&nbsp;</Label>{' '}{' '}
+                      <Input type="date" value={this.state.date_range.from} placeholder="Start Date" onChange={(e) => {
+                        this.setState({ date_range: { ...this.state.date_range, from: e.target.value } });
+                      }} />
+                      <Label for="orgSelect">To</Label>{' '}{' '}
+                      <Input type="date" value={this.state.date_range.to} placeholder="Start Date" onChange={(e) => {
+                        this.setState({ date_range: { ...this.state.date_range, to: e.target.value } });
+                      }} />
                     </FormGroup>
                   </Form>
                   </Col>

@@ -21,7 +21,7 @@ Tanda Challenge Exam
   Extra's:
    - (No) User profile edit (No)
    - (Yes) Modify / Delete shifts
-   - (Partial) Filter By Employee, ~~Date Range~~
+   - (Yes) Filter By Employee, Date Range
    - (Yes) Overnight shifts
    - (Yes) Penalty Rates (Sunday)
    - (Yes) Multiple Organizations
