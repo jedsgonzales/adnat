@@ -87,28 +87,20 @@ class Dashboard extends React.Component <IDashboardProps, IDashboardState> {
         let workSpace:ShiftWorkSpace = {};
 
         const now = moment(moment.now());
+        const emptyShift:Shift = {
+          id: 0,
+          shift_date: now.format("YYYY-MM-DD"),
+          start_time_val: now.subtract(2, 'hours').format("HH:mm"),
+          end_time_val: now.format("HH:mm"),
+          breaks: [],
+          total_worked: 0,
+          total_breaks: 0,
+          shift_cost: 0
+        }
 
-        workSpace[0] = { 
-          shift: {
-            id: 0,
-            shift_date: now.format("YYYY-MM-DD"),
-            start_time_val: now.subtract(2, 'hours').format("HH:mm"),
-            end_time_val: now.format("HH:mm"),
-            breaks: [],
-            total_worked: 0,
-            total_breaks: 0,
-            shift_cost: 0
-          },
-          original: {
-            id: 0,
-            shift_date: now.format("YYYY-MM-DD"),
-            start_time_val: now.subtract(2, 'hours').format("HH:mm"),
-            end_time_val: now.format("HH:mm"),
-            breaks: [],
-            total_worked: 0,
-            total_breaks: 0,
-            shift_cost: 0
-          },
+        workSpace[0] = {
+          shift: { ...emptyShift },
+          original: { ...emptyShift },
           breaks: [],
           editing: true
          };
